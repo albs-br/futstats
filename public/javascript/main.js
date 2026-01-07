@@ -15,6 +15,17 @@ const API_URL = "https://71n5rm3blj.execute-api.sa-east-1.amazonaws.com/default/
 
 $(document).ready(function() {
     
+    // Set global default settings
+    $.ajaxSetup({
+        cache: false,
+        type: "GET",                     // Default HTTP method
+        contentType: "application/json",  // Default content type
+        dataType: "json",                 // Default data type for server response
+        error: function(xhr, status, error) { // Default error handler
+            console.log("AJAX Error: " + status + " " + error);
+        }
+    });
+
     // TODO: put on menu click
     $("#main").load("todos-os-jogos.html", loadTableTodosOsJogos);
 
@@ -24,10 +35,44 @@ $(document).ready(function() {
         $.ajax({
             url: API_URL,
             method: "GET",
-            dataType: "text",
-            success: function(items) {
+            dataType: "json",
+            success: function(data) {
+                $("#tableHead").empty();
                 $("#tableRows").empty();
-                console.info(items);
+                console.info(data);
+
+                let temp = data.Items[0];
+
+                let arr = temp.value.split("/");
+
+                let times = [];
+                for(let i=0; i<arr.length; i++) {
+                    let line = arr[i];
+                    if(line != "") {
+                        let arrLine = line.split(";");
+                        if(i == 0) {
+                            let html = `<tr><th></th>`;
+                            $.each(arrLine, function(index, item) {
+                                if(item != "") {
+                                    html += `<th class="has-text-centered">${item}</th>`;
+                                    times.push(item);
+                                }
+                            });
+                            html += `</tr>`;
+                            $("#tableHead").append(html);
+                        }
+                        else {
+                            console.info(times);
+                            let html = `<tr><th>${times[i-1]}</th>`;
+                            $.each(arrLine, function(index, item) {
+                                if(item != "") html += `<td class="has-text-centered">${item}</td>`;
+                            });
+                            html += `</tr>`;
+                            $("#tableRows").append(html);
+                        }
+                    }
+                }
+
                 // $.each(items, function(index, item) {
                 //     $("#tableRows").append(`
                 //         <tr>
